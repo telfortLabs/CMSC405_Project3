@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>CMSC 405 Project 3 - Pierre Telfort</title>
+    <script src="three.js"></script>
+    <script>
+
+      var scene, camera, renderer;                                                    // Three.js rendering basics.
+      var canvas;                                                                     // The canvas on which the image is rendered.
+      var objectContainer;                                                            // Contains the visible objects in the scene
+
+      var cyl_torus;                                                                  // variable for cylinder and torus
+      var cone_Cube;                                                                  // variable for cone and cube
+      var sphere_Icosahedron;                                                         // variable for sphere and icosahedron
+
+      var animating = false;                                                          //set to true when any animation is running.
+      var animateCyl_torus = true;
+      var animateCone_Cube = true;
+      var animateSphere_ico = true;
+
+      /*  Create the scene graph.  This function is called once, as soon as the page loads.
+       *  The renderer has already been created before this function is called.
+       */
+      function createWorld() {
+        renderer.setClearColor(0x444444 );                                            // Set background color (0x444444 is dark gray).
+        scene = new THREE.Scene();
+
+        // create a camera, sitting on the positive z-axis.  The camera is not part of the scene.
+        camera = new THREE.PerspectiveCamera(100, canvas.width/canvas.height, 1, 500);
+        camera.position.z = 20;
+
+        // create some lights and add them to the scene.
+        scene.add(new THREE.DirectionalLight(0xffffff, .4));                          // dim light shining from above
+        var viewpointLight = new THREE.DirectionalLight( 0xffffff, 0.65 );            // a light to shine in the direction the camera faces
+        viewpointLight.position.set(0,0,1);                                           // shines down the z-axis
+        scene.add(viewpointLight);
+
+        objectContainer = new THREE.Object3D();
+        objectContainer.position.y = -1;
+
+        /* create a cylinder object */
+        var cylinderObj = new THREE.Mesh(
+                new THREE.CylinderGeometry(1,1,4,9,7),
+                new THREE.MeshPhongMaterial({color: 0xffffff,
+                  specular: 0x070707,                                                 // reflectivity for specular light
+                  side: THREE.DoubleSide,
+                  transparent: true})
+        );
+
+        cyl_torus = new THREE.Object3D();
+        cyl_torus.add(cylinderObj);
+        objectContainer.add(cyl_torus);
+
+        /* create a torus object */
+        var torusObj = new THREE.Mesh(
+                new THREE.TorusKnotGeometry(8, 1, 300, 24),
+                new THREE.MeshPhongMaterial({ color: 0xffff00, shininess: 45 })
+        );
+        torusObj.position.y = -1;
+        cyl_torus.add(torusObj);
+
+        /* create a cube object */
+        var cubeObj = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 3, 3),
+                new THREE.MeshPhongMaterial({color: 0x0000ff,
+                  specular: 0x070707,                                                 // reflectivity for specular light
+                  flatShading: true,
+                  shininess: 100,
+                  side: THREE.DoubleSide,
+                  opacity: 0.5
+                })
+        );
+        cubeObj.rotation.set(1,0,0);
+        cubeObj.position.y = 8;
+        cone_Cube = new THREE.Object3D();
+        cone_Cube.add(cubeObj);
+        objectContainer.add(cone_Cube);
+
+        /* create a sphere object */
+        var sphereObj = new THREE.Mesh(
+                new THREE.SphereGeometry(1, 32, 16),
+                new THREE.MeshPhongMaterial({
+                  color: 0x00ffff,
+                  emissive: 0,                                                       // emission color; this is the default (black)
+                  specular: 0x070707,  // reflectivity for specular light
+                  shininess: 100
+                })
+        )
+        sphereObj.position.y = 5;
+        sphere_Icosahedron = new THREE.Object3D();
+        sphere_Icosahedron.add(sphereObj);
+        objectContainer.add(sphere_Icosahedron);
+
+        /* create an icosahedron object */
+        var icosahedronObj = new THREE.Mesh(
+                new THREE.IcosahedronGeometry(3, 0),
+                new THREE.MeshPhongMaterial({color: 0x66ff66 })
+        )
+        icosahedronObj.position.y = -10;
+        icosahedronObj.position.x = -6.5;
+        sphere_Icosahedron.add(icosahedronObj);
+
+        /* Create a cone look a like obj */
+        var coneObj = new THREE.Mesh(
+                new THREE.CylinderGeometry(0,.7,6,25,7),
+                new THREE.MeshPhongMaterial({
+                  color: 0xff0000,
+                  specular: 0x070707,                                                 // reflectivity for specular light
+                  flatShading: true,                                                  // for flat-looking sides
+                  shininess: 75,
+                  side: THREE.DoubleSide,
+                  opacity: 0.5,
+                })
+        )
+        coneObj.position.y = 4;
+        coneObj.position.x = -15;
+        cone_Cube.add(coneObj);
+        scene.add(objectContainer);
+      } // end of create world function
+
+      // Render the scene.  This is called for each frame of the animation.
+      function render() {
+      renderer.render(scene, camera);
+      } // end of render function
+
+      /*  When an animation is in progress, this function is called just before rendering each
+       *  frame of the animation, to make any changes necessary in the scene graph to prepare
+       *  for that frame.
+       */
+      function updateForFrame() {
+        if (animateCone_Cube) {
+          cone_Cube.rotation.z +=0.01
+        }
+        if (animateCyl_torus) {
+          cyl_torus.rotation.y +=0.02
+        }
+        if (animateSphere_ico) {
+          sphere_Icosahedron.rotation.x +=0.02
+          sphere_Icosahedron.rotation.z +=0.02
+        }
+      } // end of update frame function
+
+
+      //--------------------------- animation support -----------------------------------
+
+      /* This function runs the animation by calling updateForFrame() then calling render().
+       * Finally, it arranges for itself to be called again to do the next frame.  When the
+       * value of animating is set to false, this function does not schedule the next frame,
+       * so the animation stops.
+       */
+      function doFrame() {
+        if (animating) {
+          updateForFrame();                                                          //runs the animation
+          render();
+          requestAnimationFrame(doFrame);                                           //arranges for itself to be called again to do the next frame
+        }
+      } // end of frame animation method
+
+      /* Responds when the setting of the "Animate" checkbox is changed.  This
+       * function will start or stop the animation, depending on its setting.
+       */
+      function doAnimateCheckbox() {
+        var anim = document.getElementById("animate").checked;
+        if (anim !== animating) {
+          animating = anim;
+          if (animating) {
+            doFrame();
+          }
+        }
+      }
+
+      // Toggles cone_Cube Animation
+      function coneCheckbox() {
+        animateCone_Cube = !animateCone_Cube;
+      }
+
+      // Toggles cyl_torus Animation
+      function cylinderCheckbox() {
+        animateCyl_torus = !animateCyl_torus;
+      }
+
+      // Toggles sphere_Icosahedron Animation
+      function sphereCheckbox() {
+        animateSphere_ico = !animateSphere_ico;
+      }
+
+      //----------------------------- keyboard support ----------------------------------
+
+      // Responds to user's key press.  Here, it is used to rotate the model.
+      function doKey(event) {
+        var code = event.keyCode;
+        var rotated = true;
+        switch( code ) {
+          case 37:
+            objectContainer.rotation.y -= 0.02;                                          // left arrow
+            break;
+          case 38:
+            objectContainer.rotation.x -= 0.02;                                         // up arrow
+            break;
+          case 39:
+            objectContainer.rotation.y +=  0.02;                                       // right arrow
+            break;
+          case 40:
+            objectContainer.rotation.x += 0.02;                                         // down arrow
+            break;
+          default: rotated = false;
+        }
+        if (rotated) {
+          event.preventDefault();  // Prevent keys from scrolling the page.
+          if (!animating) { //Prevents extra render if an animation is running
+            render();
+          }
+        }
+      }
+
+      //----------------------------------------------------------------------------------
+
+      /*
+       *  This init() function is called when by the onload event when the document has loaded.
+       */
+      function init() {
+        try {
+          canvas = document.getElementById("glcanvas");
+          renderer = new THREE.WebGLRenderer( {
+            canvas: canvas,
+            antialias: true
+          } );
+        }
+        catch (e) {
+          document.getElementById("canvas-holder").innerHTML =
+                  "<h3><b>Sorry, WebGL is unavailable.</b><h3>";
+          return;
+        }
+        document.addEventListener("keydown", doKey, false);
+        document.getElementById("animate").checked = false;
+        document.getElementById("animate").onchange = doAnimateCheckbox;
+        document.getElementById("cone_Cube").checked = true;
+        document.getElementById("cone_Cube").onchange = coneCheckbox;
+        document.getElementById("cyl_torus").checked = true;
+        document.getElementById("cyl_torus").onchange = cylinderCheckbox;
+        document.getElementById("sphere_Icosahedron").checked = true;
+        document.getElementById("sphere_Icosahedron").onchange = sphereCheckbox;
+        createWorld();
+        render();
+      }
+    </script>
+    <!-- End of script. -->
+  </head>
+  <!-- End of head tag. -->
+
+  <body onload="init()">
+    <h1>CMSC 405 Project 3 </h1>
+
+    <p><b>Animations may be controlled using the up, down, left, and right arrow keys.</b></p>
+
+    <p>
+      <label><input type="checkbox" id="animate">All Animation</label>
+    </p>
+    <p>
+      <label><input type="checkbox" id="cone_Cube">cone and cube rotation</label>
+      <label><input type="checkbox" id="cyl_torus">torus and cylinder rotation</label>
+      <label><input type="checkbox" id="sphere_Icosahedron">sphere and icosahedron rotation</label>
+    </p>
+
+    <div id="canvas-holder">
+      <canvas id="glcanvas" width="850" height="700"></canvas>
+    </div>
+  </body>
+  <!-- End of body tag. -->
+</html>
