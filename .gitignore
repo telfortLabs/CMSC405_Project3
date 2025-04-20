@@ -52,6 +52,7 @@ hs_err_pid*
 
 # Default ignored files
 *.iml
+*.json
 
 # Default ignored folders
 /lib/
