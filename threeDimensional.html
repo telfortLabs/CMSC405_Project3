@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <title>CMSC 405 Project 3 - Pierre Telfort</title>
     <script src="three.js"></script>
-    <script>
 
+    <!-- Add script below. -->
+    <script>
       var scene, camera, renderer;                                                    // Three.js rendering basics.
       var canvas;                                                                     // The canvas on which the image is rendered.
       var objectContainer;                                                            // Contains the visible objects in the scene
-
       var cyl_torus;                                                                  // variable for cylinder and torus
       var cone_Cube;                                                                  // variable for cone and cube
       var sphere_Icosahedron;                                                         // variable for sphere and icosahedron
-
       var animating = false;                                                          //set to true when any animation is running.
       var animateCyl_torus = true;
       var animateCone_Cube = true;
@@ -47,7 +46,6 @@
                   side: THREE.DoubleSide,
                   transparent: true})
         );
-
         cyl_torus = new THREE.Object3D();
         cyl_torus.add(cylinderObj);
         objectContainer.add(cyl_torus);
@@ -121,7 +119,7 @@
 
       // Render the scene.  This is called for each frame of the animation.
       function render() {
-      renderer.render(scene, camera);
+        renderer.render(scene, camera);
       } // end of render function
 
       /*  When an animation is in progress, this function is called just before rendering each
@@ -212,7 +210,7 @@
             render();
           }
         }
-      }
+      } // end of keyboard support function
 
       //----------------------------------------------------------------------------------
 
@@ -255,7 +253,7 @@
     <p><b>Animations may be controlled using the up, down, left, and right arrow keys.</b></p>
 
     <p>
-      <label><input type="checkbox" id="animate">All Animation</label>
+      <label><input type="checkbox" id="animate">Start Animation</label>
     </p>
     <p>
       <label><input type="checkbox" id="cone_Cube">cone and cube rotation</label>
